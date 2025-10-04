@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { supabase } from "@/lib/supabaseClient";
 
-// ✅ Define types
+// ✅ Define proper types
 interface Habit {
   id: number;
   name: string;
@@ -20,13 +20,14 @@ interface Habit {
   completed: boolean;
 }
 
-interface SuggestionResponse {
-  suggestion: string;
+interface User {
+  id: string;
+  email?: string;
 }
 
 interface AuthData {
-  user: any;
-  session: any;
+  user: User | null;
+  session: object | null;
 }
 
 export default function Home() {
@@ -36,7 +37,7 @@ export default function Home() {
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [suggestion, setSuggestion] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -244,151 +245,150 @@ export default function Home() {
         authData = data;
       }
       
-      setUser(authData.user);
+      setUser(authData.user as User | null);
       setEmail("");
       setPassword("");
-    } catch (error: any) {
-      alert(error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Authentication failed";
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   const signOut = async () => {
-  try {
-    console.log("🚪 Attempting sign out...");
-    const { error } = await supabase.auth.signOut();
-    
-    if (error) {
-      console.error("Sign out error:", error);
-      throw error;
+    try {
+      console.log("🚪 Attempting sign out...");
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Sign out error:", error);
+        throw error;
+      }
+      
+      // Force state updates
+      setUser(null);
+      setHabits([]);
+      setSuggestion("");
+      setName("");
+      setDescription("");
+      
+      console.log("✅ Signed out successfully");
+      
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Sign out failed";
+      console.error("Sign out failed:", error);
+      alert(`Sign out failed: ${errorMessage}`);
     }
-    
-    // Force state updates
-    setUser(null);
-    setHabits([]);
-    setSuggestion("");
-    setName("");
-    setDescription("");
-    
-    console.log("✅ Signed out successfully");
-    
-    // Optional: Force reload to ensure clean state
-    // window.location.reload();
-    
-  } catch (error: any) {
-    console.error("Sign out failed:", error);
-    alert(`Sign out failed: ${error.message}`);
-  }
-};
+  };
 
   const addSuggestionAsHabit = async (suggestionText: string) => {
-  try {
-    console.log("🎯 Adding suggestion as habit:", suggestionText);
-    
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      alert("Please sign in to add habits");
-      return;
+    try {
+      console.log("🎯 Adding suggestion as habit:", suggestionText);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        alert("Please sign in to add habits");
+        return;
+      }
+
+      // Clean the habit name (remove emojis for cleaner name)
+      const habitName = suggestionText.replace(/[^\w\s]/gi, '').trim();
+
+      console.log("📝 Processed habit:", { habitName, suggestionText });
+
+      const { data, error } = await supabase
+        .from("habits")
+        .insert({
+          user_id: user.id,
+          name: habitName,
+          description: suggestionText,
+          completed: false,
+        })
+        .select();
+
+      if (error) {
+        console.error("❌ Supabase insert error:", error);
+        alert(`Error: ${error.message}`);
+        return;
+      }
+
+      console.log("✅ Suggestion added as habit:", data);
+
+      // Success - clear suggestion and refresh
+      setSuggestion("");
+      await fetchHabits(); // Wait for refresh
+      
+      // Show success message
+      alert(`✅ "${habitName}" added to your habits!`);
+
+    } catch (err: unknown) {
+      console.error("❌ Error adding habit from suggestion:", err);
+      alert("Unexpected error adding habit from suggestion");
     }
+  };
 
-    // Clean the habit name (remove emojis for cleaner name)
-    const habitName = suggestionText.replace(/[^\w\s]/gi, '').trim();
-
-    console.log("📝 Processed habit:", { habitName, suggestionText });
-
-    const { data, error } = await supabase
-      .from("habits")
-      .insert({
-        user_id: user.id,
-        name: habitName,
-        description: suggestionText,
-        completed: false,
-      })
-      .select();
-
-    if (error) {
-      console.error("❌ Supabase insert error:", error);
-      alert(`Error: ${error.message}`);
-      return;
+  const fetchSuggestion = async () => {
+    try {
+      const randomSuggestion = habitSuggestions[
+        Math.floor(Math.random() * habitSuggestions.length)
+      ];
+      setSuggestion(randomSuggestion);
+    } catch (err: unknown) {
+      console.error("Failed to fetch suggestion:", err);
+      setSuggestion("Start with a 10-minute daily walk for better health! 🚶‍♀️");
     }
-
-    console.log("✅ Suggestion added as habit:", data);
-
-    // Success - clear suggestion and refresh
-    setSuggestion("");
-    await fetchHabits(); // Wait for refresh
-    
-    // Show success message
-    alert(`✅ "${habitName}" added to your habits!`);
-
-  } catch (err) {
-    console.error("❌ Error adding habit from suggestion:", err);
-    alert("Unexpected error adding habit from suggestion");
-  }
-};
-
-const fetchSuggestion = async () => {
-  try {
-    const randomSuggestion = habitSuggestions[
-      Math.floor(Math.random() * habitSuggestions.length)
-    ];
-    setSuggestion(randomSuggestion);
-  } catch (err) {
-    console.error("Failed to fetch suggestion:", err);
-    setSuggestion("Start with a 10-minute daily walk for better health! 🚶‍♀️");
-  }
-};
+  };
 
   // ✅ Fixed addHabit function with better error handling
   const addHabit = async () => {
-  if (!name.trim()) {
-    alert("Please enter a habit name");
-    return;
-  }
-
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      alert("Please sign in to add habits");
+    if (!name.trim()) {
+      alert("Please enter a habit name");
       return;
     }
 
-    console.log("➕ Adding habit:", { name, description, user: user.id });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        alert("Please sign in to add habits");
+        return;
+      }
 
-    const { data, error } = await supabase
-      .from("habits")
-      .insert({
-        user_id: user.id,
-        name: name.trim(),
-        description: description.trim(),
-        completed: false,
-      })
-      .select(); // Add .select() to get the inserted data
+      console.log("➕ Adding habit:", { name, description, user: user.id });
 
-    if (error) {
-      console.error("❌ Supabase error:", error);
-      alert(`Error adding habit: ${error.message}`);
-      return;
+      const { data, error } = await supabase
+        .from("habits")
+        .insert({
+          user_id: user.id,
+          name: name.trim(),
+          description: description.trim(),
+          completed: false,
+        })
+        .select(); // Add .select() to get the inserted data
+
+      if (error) {
+        console.error("❌ Supabase error:", error);
+        alert(`Error adding habit: ${error.message}`);
+        return;
+      }
+
+      console.log("✅ Habit added successfully:", data);
+
+      // Reset form and refresh habits
+      setName("");
+      setDescription("");
+      await fetchHabits(); // Wait for habits to refresh
+      
+      // Show success feedback
+      console.log("🔄 Habits should be refreshed now");
+
+    } catch (err: unknown) {
+      console.error("❌ Unexpected error adding habit:", err);
+      alert("Unexpected error adding habit");
     }
-
-    console.log("✅ Habit added successfully:", data);
-
-    // Reset form and refresh habits
-    setName("");
-    setDescription("");
-    await fetchHabits(); // Wait for habits to refresh
-    
-    // Show success feedback
-    console.log("🔄 Habits should be refreshed now");
-
-  } catch (err) {
-    console.error("❌ Unexpected error adding habit:", err);
-    alert("Unexpected error adding habit");
-  }
-};
+  };
 
   const toggleHabit = async (id: number, completed: boolean) => {
     try {
@@ -400,7 +400,7 @@ const fetchSuggestion = async () => {
       if (error) throw error;
 
       fetchHabits();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to update habit:", err);
     }
   };
@@ -414,74 +414,74 @@ const fetchSuggestion = async () => {
       if (error) throw error;
 
       fetchHabits();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to delete habit:", err);
     }
   };
 
   // ✅ Fixed session check with better error handling
   useEffect(() => {
-  let mounted = true;
-  let timeoutId: NodeJS.Timeout;
+    let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
-  const initializeAuth = async () => {
-    try {
-      // Set a timeout to prevent infinite loading
-      timeoutId = setTimeout(() => {
+    const initializeAuth = async () => {
+      try {
+        // Set a timeout to prevent infinite loading
+        timeoutId = setTimeout(() => {
+          if (mounted) {
+            console.log("Auth check timeout - forcing load");
+            setAuthLoading(false);
+          }
+        }, 5000); // 5 second timeout
+
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Session error:", error);
+          return;
+        }
+        
         if (mounted) {
-          console.log("Auth check timeout - forcing load");
+          clearTimeout(timeoutId);
+          if (session) {
+            setUser(session.user as User);
+            await fetchHabits();
+          }
           setAuthLoading(false);
         }
-      }, 5000); // 5 second timeout
-
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error("Session error:", error);
-        return;
-      }
-      
-      if (mounted) {
-        clearTimeout(timeoutId);
-        if (session) {
-          setUser(session.user);
-          await fetchHabits();
+      } catch (error: unknown) {
+        console.error("Auth initialization error:", error);
+        if (mounted) {
+          clearTimeout(timeoutId);
+          setAuthLoading(false);
         }
-        setAuthLoading(false);
       }
-    } catch (error) {
-      console.error("Auth initialization error:", error);
-      if (mounted) {
-        clearTimeout(timeoutId);
-        setAuthLoading(false);
-      }
-    }
-  };
+    };
 
-  initializeAuth();
+    initializeAuth();
 
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    async (event, session) => {
-      console.log("Auth state changed:", event);
-      if (mounted) {
-        if (session) {
-          setUser(session.user);
-          await fetchHabits();
-        } else {
-          setUser(null);
-          setHabits([]);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("Auth state changed:", event);
+        if (mounted) {
+          if (session) {
+            setUser(session.user as User);
+            await fetchHabits();
+          } else {
+            setUser(null);
+            setHabits([]);
+          }
+          setAuthLoading(false);
         }
-        setAuthLoading(false);
       }
-    }
-  );
+    );
 
-  return () => {
-    mounted = false;
-    clearTimeout(timeoutId);
-    subscription.unsubscribe();
-  };
-}, []);
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
+  }, []);
 
   if (authLoading) {
     return (
@@ -636,12 +636,12 @@ const fetchSuggestion = async () => {
           Add Habit
         </button>
         <button
-  type="button"
-  className="bg-purple-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shadow-md"
-  onClick={fetchSuggestion}
->
-  Get Suggestion
-</button>
+          type="button"
+          className="bg-purple-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shadow-md"
+          onClick={fetchSuggestion}
+        >
+          Get Suggestion
+        </button>
       </div>
 
       {suggestion && (
