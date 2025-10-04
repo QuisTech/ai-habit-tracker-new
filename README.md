@@ -14,7 +14,6 @@ A modern, full-stack habit tracking application built with Next.js, Supabase, an
 
 <img width="1324" height="634" alt="Light theme" src="https://github.com/user-attachments/assets/c1d86e6d-641d-4702-9fbb-3a4c43465e4c" />
 
-
 ## ✨ Features
 
 ### 🔐 Authentication & Security
@@ -68,7 +67,7 @@ A modern, full-stack habit tracking application built with Next.js, Supabase, an
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/ai-habit-tracker.git
+   git clone https://github.com/QuisTech/ai-habit-tracker-new
    cd ai-habit-tracker
 Install dependencies
 
@@ -148,8 +147,7 @@ Vercel - Serverless deployment platform
 
 Environment Variables - Secure configuration
 
-<img width="414" height="352" alt="Screenshot 2025-10-04 132614" src="https://github.com/user-attachments/assets/f4df1edc-b6ad-4904-a181-35477a2acff1" />
-
+<img width="414" height="352" alt="Mobile view" src="https://github.com/user-attachments/assets/f4df1edc-b6ad-4904-a181-35477a2acff1" />
 🔧 Configuration
 Supabase Setup
 Create a new project at supabase.com
@@ -213,16 +211,43 @@ NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 🤝 Contributing
-We welcome contributions! Please see our Contributing Guide for details.
+We love contributions! This is an MVP with huge potential for growth. Whether you're fixing bugs, adding features, or improving documentation, all contributions are welcome.
 
-Development Setup
+Development Opportunities
+Mobile App with React Native
+
+Advanced Analytics and habit streaks
+
+Social Features and progress sharing
+
+AI Integration with real OpenAI API
+
+Reminder System with notifications
+
+Multi-language support
+
+Data Export capabilities
+
+Quick Start for Developers
+bash
+# Fork & clone
+git clone https://github.com/QuisTech/ai-habit-tracker-new
+cd ai-habit-tracker
+
+# Install & run
+npm install
+npm run dev
+
+# Set up environment
+cp .env.example .env.local
+Contribution Guidelines
 Fork the repository
 
-Create a feature branch: git checkout -b feature/amazing-feature
+Create a feature branch (git checkout -b feature/amazing-feature)
 
-Commit your changes: git commit -m 'Add amazing feature'
+Commit your changes (git commit -m 'Add amazing feature')
 
-Push to the branch: git push origin feature/amazing-feature
+Push to the branch (git push origin feature/amazing-feature)
 
 Open a Pull Request
 
@@ -309,17 +334,3 @@ Contact the maintainers
 Built with ❤️ using Next.js, Supabase, and TypeScript
 
 ⭐ Star this repo if you found it helpful!
-
-text
-
-This README provides:
-
-- **Comprehensive feature overview**
-- **Step-by-step installation guide**
-- **Technical architecture details**
-- **Usage instructions**
-- **Deployment guides**
-- **Troubleshooting section**
-- **Future roadmap**
-
-
