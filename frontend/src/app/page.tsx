@@ -256,6 +256,33 @@ export default function Home() {
     }
   };
 
+
+
+const clearAuthAndRefresh = async () => {
+  try {
+    // Clear all Supabase auth state
+    await supabase.auth.signOut();
+    
+    // Clear local storage
+    localStorage.removeItem('supabase.auth.token');
+    sessionStorage.removeItem('supabase.auth.token');
+    
+    // Clear any cookies
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    
+    // Force page reload
+    window.location.href = '/';
+  } catch (error) {
+    console.error('Error clearing auth:', error);
+    // Still reload even if there's an error
+    window.location.href = '/';
+  }
+};
+  
   const signOut = async () => {
     try {
       console.log("🚪 Attempting sign out...");
