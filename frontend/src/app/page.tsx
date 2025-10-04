@@ -215,7 +215,7 @@ export default function Home() {
       if (error) throw error;
 
       setHabits(data || []);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to fetch habits:", err);
       setHabits([]);
     }
