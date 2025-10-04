@@ -7,9 +7,15 @@ interface Props {
   children: ReactNode;
 }
 
+interface User {
+  id: string;
+  email?: string;
+  // Add other user properties you need
+}
+
 export default function AuthWrapper({ children }: Props) {
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -17,7 +23,7 @@ export default function AuthWrapper({ children }: Props) {
       if (error) {
         console.error(error);
       } else {
-        setUser(user);
+        setUser(user as User | null);
       }
       setLoading(false);
     };
