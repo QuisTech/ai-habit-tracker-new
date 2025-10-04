@@ -148,22 +148,8 @@ Vercel - Serverless deployment platform
 
 Environment Variables - Secure configuration
 
-📁 Project Structure
-text
-ai-habit-tracker/
-├── src/
-│   ├── app/
-│   │   ├── page.tsx          # Main habit tracker page
-│   │   ├── auth/
-│   │   │   └── page.tsx      # Authentication page
-│   │   └── layout.tsx        # Root layout
-│   ├── components/
-│   │   └── AuthWrapper.tsx   # Authentication wrapper
-│   └── lib/
-│       └── supabaseClient.ts # Supabase configuration
-├── public/                   # Static assets
-├── package.json
-└── README.md
+<img width="414" height="352" alt="Screenshot 2025-10-04 132614" src="https://github.com/user-attachments/assets/f4df1edc-b6ad-4904-a181-35477a2acff1" />
+
 🔧 Configuration
 Supabase Setup
 Create a new project at supabase.com
